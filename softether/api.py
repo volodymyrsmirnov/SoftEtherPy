@@ -101,9 +101,9 @@ class SoftEtherAPI(object):
     def authenticate(self, hubname=None):
         auth_payload = {
             'method': ('string', ['admin']),
-            'client_str': ('string', ['Pervolo VPN Manager']),
+            'client_str': ('string', ['SoftEtherPy']),
             'client_ver': ('int', [1]),
-            'client_build': ('int', [1]),
+            'client_build': ('int', [0]),
         }
 
         if hubname is not None:
