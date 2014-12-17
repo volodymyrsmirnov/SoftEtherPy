@@ -26,7 +26,7 @@ class SoftEtherProtocol(object):
         return self.get_int_impl(8)
 
     def get_string(self, offset=0):
-        return self.get_raw(self.get_int() - offset);
+        return self.get_raw(self.get_int() - offset)
 
     def deserialize(self, with_type=False):
         self.data = {}
@@ -40,7 +40,7 @@ class SoftEtherProtocol(object):
             key_type = self.get_int()
 
             key_value_count = self.get_int()
-            key_value_getter = None
+            key_value_getter = lambda: b''
 
             if key_type == 0:
                 key_value_getter = self.get_int
@@ -132,7 +132,7 @@ class SoftEtherProtocol(object):
 
             self.data[key] = (value_type_int, value)
 
-            key_value_setter = None
+            key_value_setter = lambda v: v
 
             if value_type_int == 0:
                 key_value_setter = self.set_int

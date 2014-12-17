@@ -107,7 +107,7 @@ class SoftEtherAPI(object):
         }
 
         if hubname is not None:
-            auth_payload['hubname'] = ('string', [hubname]),
+            auth_payload['hubname'] = ('string', [hubname])
 
         hashed_password = hashlib.new('sha')
         hashed_password.update(str.encode(self.admin_password))
@@ -172,7 +172,7 @@ class SoftEtherAPI(object):
             'IntValue': ('int', [int_value]),
             'Int64Value': ('int64', [int64_value]),
             'StrValue': ('string', [string_value]),
-            'UniStrValue': ('ustring', [ustring_value])
+            'UniStrValue': ('ustring', [ustring_value]),
         }
 
         return self.call_method('Test', payload)
