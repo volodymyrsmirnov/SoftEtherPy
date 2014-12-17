@@ -57,3 +57,6 @@ target/
 
 # Project specific
 test.py
+
+# Virtual environment
+venv
