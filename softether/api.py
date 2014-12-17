@@ -40,7 +40,7 @@ class SoftEtherAPIConnector(object):
         self.socket.write(str.encode('{0}\r\n'.format(header)))
         return self.socket.write(body) == len(body)
 
-    def get_response(self):
+    def get_http_response(self):
         with self.socket.makefile('rb') as socket_file:
             response_code = int(socket_file.readline()[9:12])
             response_headers = {}
@@ -97,7 +97,7 @@ class SoftEtherAPI(object):
         if not self.socket.send_http_request('POST', '/vpnsvc/connect.cgi', b'VPNCONNECT', self.global_headers):
             raise SoftEtherAPIException('api_vpnconnect_error')
 
-        response = self.socket.get_response()
+        response = self.socket.get_http_response()
 
         if not response['code'] == 200:
             raise SoftEtherAPIException('api_connect_non_200')
@@ -107,7 +107,7 @@ class SoftEtherAPI(object):
         if 'random' not in self.connect_response:
             raise SoftEtherAPIException('api_connect_missing_random')
 
-    def authenticate(self, hubname=None):
+    def authenticate(self, hub_name=None):
         auth_payload = {
             'method': ('string', ['admin']),
             'client_str': ('string', ['SoftEtherPy']),
@@ -115,8 +115,8 @@ class SoftEtherAPI(object):
             'client_build': ('int', [0]),
         }
 
-        if hubname is not None:
-            auth_payload['hubname'] = ('string', [hubname])
+        if hub_name is not None:
+            auth_payload['hubname'] = ('string', [hub_name])
 
         hashed_password = hashlib.new('sha')
         hashed_password.update(str.encode(self.admin_password))
@@ -132,7 +132,7 @@ class SoftEtherAPI(object):
                                              SoftEtherProtocol().serialize(auth_payload), self.global_headers):
             raise SoftEtherAPIException('api_authenticate_error')
 
-        response = self.socket.get_response()
+        response = self.socket.get_http_response()
 
         if not response['code'] == 200:
             raise SoftEtherAPIException('api_authenticate_non_200')
