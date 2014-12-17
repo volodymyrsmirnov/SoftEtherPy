@@ -140,12 +140,8 @@ class SoftEtherAPI(object):
         if payload is None:
             payload = {}
 
-        for param, value in list(payload.items()):
-            if isinstance(value[1], list):
-                if len(value[1]) == 1:
-                    if value[1][0] is None:
-                        del payload[param]
-            elif value[1] is None:
+        for param, value in payload.items():
+            if value[1] is None or (isinstance(value[1], list) and None in value[1]):
                 del payload[param]
 
         os_socket = self.socket.get_socket()
