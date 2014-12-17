@@ -3,7 +3,7 @@ import socket
 import hashlib
 
 from .protocol import SoftEtherProtocol
-
+from .errors import strerror
 
 class SoftEtherAPIException(Exception):
     pass
@@ -140,7 +140,7 @@ class SoftEtherAPI(object):
         if payload is None:
             payload = {}
 
-        for param, value in payload.items():
+        for param, value in list(payload.items()):
             if value[1] is None or (isinstance(value[1], list) and None in value[1]):
                 del payload[param]
 
@@ -167,7 +167,12 @@ class SoftEtherAPI(object):
         if len(response_buffer) != data_length_as_int:
             raise SoftEtherAPIException('api_call_wrong_response_length')
 
-        return SoftEtherProtocol(response_buffer).deserialize()
+        response = SoftEtherProtocol(response_buffer).deserialize()
+
+        if 'error' in response:
+            response['error'] = [strerror(errno) for errno in response['error']]
+
+        return response
 
     # Methods start here
 
@@ -1163,5 +1168,3 @@ class SoftEtherAPI(object):
         }
 
         return self.call_method('SetDDnsInternetSettng', payload)
-
-
