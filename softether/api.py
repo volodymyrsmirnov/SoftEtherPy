@@ -12,11 +12,18 @@ class SoftEtherAPIException(Exception):
 class SoftEtherAPIConnector(object):
     socket = None
 
+    host = None
+    port = None
+
     def __init__(self, host, port):
         self.socket = ssl.wrap_socket(socket.socket(socket.AF_INET, socket.SOCK_STREAM), cert_reqs=ssl.CERT_NONE)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
 
-        self.socket.connect((host, port))
+        self.host = host
+        self.port = port
+
+    def connect(self):
+        self.socket.connect((self.host, self.port))
 
     def send_http_request(self, method, target, body, headers=None):
         if headers is None:
@@ -85,6 +92,8 @@ class SoftEtherAPI(object):
         self.socket = SoftEtherAPIConnector(hostname, port)
 
     def connect(self):
+        self.socket.connect()
+
         if not self.socket.send_http_request('POST', '/vpnsvc/connect.cgi', b'VPNCONNECT', self.global_headers):
             raise SoftEtherAPIException('api_vpnconnect_error')
 
