@@ -5,7 +5,7 @@ from distutils.core import setup
 setup(
     name='SoftEtherPy',
     version='1.0',
-    description='Python Distribution Utilities',
+    description='SoftEther VPN Server Python Management API',
     author='Pervolo',
     author_email='info@pervolo.com',
     url='https://github.com/mindcollapse/SoftEtherPy',
