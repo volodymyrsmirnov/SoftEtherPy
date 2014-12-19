@@ -9,6 +9,5 @@ setup(
     author='Pervolo',
     author_email='info@pervolo.com',
     url='https://github.com/mindcollapse/SoftEtherPy',
-    packages=['distutils', 'distutils.command'],
-    package_dir = {'': 'softether'}
+    packages=['softether'],
 )
