@@ -17,7 +17,7 @@ class SoftEtherProtocol(object):
 
     def get_int_impl(self, size):
         raw = self.get_raw(size)
-        return struct.unpack('!i' if size == 4 else '!q', raw)[0]
+        return struct.unpack('I' if size == 4 else 'Q', raw)[0]
 
     def get_int(self):
         return self.get_int_impl(4)
