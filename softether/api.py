@@ -8,6 +8,9 @@ from .errors import strerror
 class SoftEtherAPIException(Exception):
     pass
 
+def python27_exit(socket):
+    print ("tada")
+
 
 class SoftEtherAPIConnector(object):
     socket = None
@@ -41,7 +44,9 @@ class SoftEtherAPIConnector(object):
         return self.socket.write(body) == len(body)
 
     def get_http_response(self):
-        with self.socket.makefile('rb') as socket_file:
+        try:
+            socket_file = self.socket.makefile('rb')
+
             response_code = int(socket_file.readline()[9:12])
             response_headers = {}
             response_length = 0
@@ -68,6 +73,8 @@ class SoftEtherAPIConnector(object):
                 'length': response_length,
                 'body': response_body,
             }
+        finally:
+            socket_file.close()
 
     def get_socket(self):
         return self.socket
