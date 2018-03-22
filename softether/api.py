@@ -1,6 +1,7 @@
 import ssl
 import socket
 import hashlib
+import base64
 
 from .protocol import SoftEtherProtocol
 from .errors import strerror
@@ -282,13 +283,17 @@ class SoftEtherAPI(object):
 
     def get_server_cipher(self, string=None):
         payload = {
-            'String': ('string', [string])
+            'String': ('string', [""])
         }
 
         return self.call_method('GetServerCipher', payload)
 
     def set_server_cipher(self):
-        return self.call_method('SetServerCipher')
+        payload = {
+            'String': ('string', [string])
+        }
+
+        return self.call_method('SetServerCipher', payload)
 
     def create_hub(self, hub_name=None, hashed_password=None, secure_password=None, online=None, hub_type=None):
         payload = {
@@ -504,7 +509,7 @@ class SoftEtherAPI(object):
 
         return self.call_method('GetLinkStatus', payload)
 
-    def add_access(self, hub_name=None, id=None, active=None, priority=None, discard=None, src_ip_address=None,
+    def add_access(self, hub_name=None, id=None, note=None, active=None, priority=None, discard=None, src_ip_address=None,
                    src_subnet_mask=None, dest_ip_address=None, dest_subnet_mask=None, protocol=None,
                    src_port_start=None, src_port_end=None, dest_port_start=None, dest_port_end=None,
                    src_username=None, dest_username=None, src_mac_address=None, src_mac_mask=None,
@@ -515,6 +520,7 @@ class SoftEtherAPI(object):
         payload = {
             'HubName': ('string', [hub_name]),
             'Id': ('int', [id]),
+            'Note': ('string', [note]),
             'Active': ('int', [active]),
             'Priority': ('int', [priority]),
             'Discard': ('int', [discard]),
@@ -572,7 +578,18 @@ class SoftEtherAPI(object):
 
         return self.call_method('SetAccessList', payload)
 
-    def create_user(self, hub_name=None, name=None, group_name=None, realname=None, note=None, created_time=None, updated_time=None, expire_time=None, num_login=None):
+    def create_user(self, hub_name=None, name=None, auth_type=None, password=None, user_cert=None, common_name=None, radius_user=None, nt_user=None, group_name=None, realname=None, note=None, created_time=None, updated_time=None, expire_time=None, num_login=None):
+        if password:
+            hashed_key = hashlib.new('sha')
+            hashed_key.update(str.encode(password))
+            hashed_key.update(str.encode(str.upper(name)))
+            hashed_key = hashed_key.digest()
+            ntlm_secure_hash = hashlib.new('sha')
+            ntlm_secure_hash.update(hashed_key)
+            ntlm_secure_hash.update(self.connect_response['random'][0])
+            ntlm_secure_hash = ntlm_secure_hash.digest()
+        if user_cert:
+            user_cert = base64.b64decode(user_cert.encode())
         payload = {
             'HubName': ('string', [hub_name]),
             'Name': ('string', [name]),
@@ -582,12 +599,30 @@ class SoftEtherAPI(object):
             'CreatedTime': ('int64', [created_time]),
             'UpdatedTime': ('int64', [updated_time]),
             'ExpireTime': ('int', [expire_time]),
-            'NumLogin': ('int', [num_login])
+            'NumLogin': ('int', [num_login]),
+            'AuthType': ('int', [auth_type]),
+            'HashedKey': ('raw', [hashed_key]),
+            'NtLmSecureHash': ('raw', [ntlm_secure_hash]),
+            'UserX': ('raw', [user_cert]),
+            'CommonName': ('ustring', [common_name]),
+            'RadiusUsername': ('string', [radius_user]),
+            'NtUsername': ('string', [nt_user])
         }
 
         return self.call_method('CreateUser', payload)
 
-    def set_user(self, hub_name=None, name=None, group_name=None, realname=None, note=None, created_time=None, updated_time=None, expire_time=None, num_login=None):
+    def set_user(self, hub_name=None, name=None, auth_type=None, password=None, user_cert=None, common_name=None, radius_user=None, nt_user=None, group_name=None, realname=None, note=None, created_time=None, updated_time=None, expire_time=None, num_login=None):
+        if password:
+            hashed_key = hashlib.new('sha')
+            hashed_key.update(str.encode(password))
+            hashed_key.update(str.encode(str.upper(name)))
+            hashed_key = hashed_key.digest()
+            ntlm_secure_hash = hashlib.new('sha')
+            ntlm_secure_hash.update(hashed_key)
+            ntlm_secure_hash.update(self.connect_response['random'][0])
+            ntlm_secure_hash = ntlm_secure_hash.digest()
+        if user_cert:
+            user_cert = base64.b64decode(user_cert.encode())
         payload = {
             'HubName': ('string', [hub_name]),
             'Name': ('string', [name]),
@@ -597,7 +632,14 @@ class SoftEtherAPI(object):
             'CreatedTime': ('int64', [created_time]),
             'UpdatedTime': ('int64', [updated_time]),
             'ExpireTime': ('int', [expire_time]),
-            'NumLogin': ('int', [num_login])
+            'NumLogin': ('int', [num_login]),
+            'AuthType': ('int', [auth_type]),
+            'HashedKey': ('raw', [hashed_key]),
+            'NtLmSecureHash': ('raw', [ntlm_secure_hash]),
+            'UserX': ('raw', [user_cert]),
+            'CommonName': ('ustring', [common_name]),
+            'RadiusUsername': ('string', [radius_user]),
+            'NtUsername': ('string', [nt_user])
         }
 
         return self.call_method('SetUser', payload)
@@ -750,9 +792,36 @@ class SoftEtherAPI(object):
 
         return self.call_method('DisableSecureNAT', payload)
 
-    def set_secure_nat_option(self, hub_name=None):
+    # NOTE: mac_address, ip, mask, use_nat, use_dhcp, apply_dhcp_push_routes, save_log are
+    def set_secure_nat_option(self, hub_name=None, use_nat=1, use_dhcp=1, save_log=1,
+                            apply_dhcp_push_routes=1, mac_address=None, ip=None, mask=None,
+                            mtu=0, nat_tcp_timeout=0, nat_udp_timeout=0,
+                            dhcp_lease_ip_start=0, dhcp_lease_ip_end=0,
+                            dhcp_subnet_mask=0, dhcp_expire_time_span=0,
+                            dhcp_gateway_address=0, dhcp_dns_server_address=0,
+                            dhcp_dns_server_address2=0, dhcp_domain_name="",
+                            dhcp_push_routes=""):
         payload = {
-            'HubName': ('string', [hub_name])
+            'RpcHubName': ('string', [hub_name]),
+            'MacAddress': ('raw', [mac_address]),
+            'Ip': ('int', [ip]),
+            'Mask': ('int', [mask]),
+            'UseNat': ('int', [use_nat]),
+            'Mtu': ('int', [mtu]),
+            'NatTcpTimeout': ('int', [nat_tcp_timeout]),
+            'NatUdpTimeout': ('int', [nat_udp_timeout]),
+            'UseDhcp': ('int', [use_dhcp]),
+            'DhcpLeaseIPStart': ('int', [dhcp_lease_ip_start]),
+            'DhcpLeaseIPEnd': ('int', [dhcp_lease_ip_end]),
+            'DhcpSubnetMask': ('int', [dhcp_subnet_mask]),
+            'DhcpExpireTimeSpan': ('int', [dhcp_expire_time_span]),
+            'DhcpGatewayAddress': ('int', [dhcp_gateway_address]),
+            'DhcpDnsServerAddress': ('int', [dhcp_dns_server_address]),
+            'DhcpDnsServerAddress2': ('int', [dhcp_dns_server_address2]),
+            'DhcpDomainName': ('string', [dhcp_domain_name]),
+            'SaveLog': ('int', [save_log]),
+            'ApplyDhcpPushRoutes': ('int', [apply_dhcp_push_routes]),
+            'DhcpPushRoutes': ('string', [dhcp_push_routes])
         }
 
         return self.call_method('SetSecureNATOption', payload)
@@ -1184,3 +1253,4 @@ class SoftEtherAPI(object):
         }
 
         return self.call_method('SetDDnsInternetSettng', payload)
+
