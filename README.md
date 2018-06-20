@@ -26,3 +26,19 @@ print(api.get_server_status())
 
 api.disconnect()
 ```
+
+Create user
+-------------
+For different authentication type using create_user|set_user you need to set auth_type value:
+
+Anonymous authentication: 0
+
+Password authentication: 1
+
+User certificate authentication: 2
+
+Root certificate which is issued by trusted Certificate Authority: 3
+
+Radius authentication: 4
+
+Windows NT authentication: 5

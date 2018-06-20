@@ -17,7 +17,7 @@ class SoftEtherProtocol(object):
 
     def get_int_impl(self, size):
         raw = self.get_raw(size)
-        return struct.unpack('!I' if size == 4 else '!Q', raw)[0]
+        return struct.unpack('!L' if size == 4 else '!Q', raw)[0]
 
     def get_int(self):
         return self.get_int_impl(4)
@@ -71,9 +71,9 @@ class SoftEtherProtocol(object):
         self.payload += raw if type(raw) is bytes else str.encode(raw)
 
     def set_int_impl(self, value, size):
-        raw = struct.pack('!i' if size == 4 else '!q', value)
+        raw = struct.pack('!L' if size == 4 else '!Q', value)
         self.set_raw(raw)
-    
+
     def set_int(self, value):
         self.set_int_impl(value, 4)
 
@@ -149,6 +149,9 @@ class SoftEtherProtocol(object):
             elif value_type_int == 4:
                 key_value_setter = self.set_int64
 
+            elif value_type_int == 5:
+                key_value_setter = self.set_int_le
+
             self.set_string(key, 1)
             self.set_int(value_type_int)
             self.set_int(len(value))
@@ -157,3 +160,4 @@ class SoftEtherProtocol(object):
                 key_value_setter(value_item)
 
         return self.payload
+
