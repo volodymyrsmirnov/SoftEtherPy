@@ -588,6 +588,9 @@ class SoftEtherAPI(object):
             ntlm_secure_hash.update(hashed_key)
             ntlm_secure_hash.update(self.connect_response['random'][0])
             ntlm_secure_hash = ntlm_secure_hash.digest()
+        else:
+            hashed_key = None
+            ntlm_secure_hash = None
         if user_cert:
             user_cert = base64.b64decode(user_cert.encode())
         payload = {
@@ -621,6 +624,9 @@ class SoftEtherAPI(object):
             ntlm_secure_hash.update(hashed_key)
             ntlm_secure_hash.update(self.connect_response['random'][0])
             ntlm_secure_hash = ntlm_secure_hash.digest()
+        else:
+            hashed_key = None
+            ntlm_secure_hash = None
         if user_cert:
             user_cert = base64.b64decode(user_cert.encode())
         payload = {
